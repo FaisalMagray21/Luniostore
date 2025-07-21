@@ -1,0 +1,102 @@
+import { NavLink, useNavigate } from "react-router-dom";
+
+const Header = () => {
+  const navigate = useNavigate();
+
+  const handleSellerClick = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      // if already signed in
+      navigate("/seller/dashboard");
+    } else {
+      // not signed in, go to sign-in page with role param
+      navigate("/signin?role=seller");
+    }
+  };
+
+  return (
+    <header className="bg-gray-900 shadow-lg sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap justify-between items-center gap-4 py-3">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <NavLink
+              to="/"
+              className="text-3xl font-extrabold text-purple-400 tracking-wide"
+            >
+              Lunio
+            </NavLink>
+          </div>
+
+          {/* Nav Links */}
+          <div className="hidden md:flex space-x-6">
+            {[
+              { path: "/", name: "Home" },
+              { path: "/shop", name: "Shop" },
+              { path: "/hardware", name: "Hardware" },
+              { path: "/software", name: "Software" },
+              { path: "/services", name: "Services" },
+              { path: "/blog", name: "Blog" },
+              { path: "/contact", name: "Contact" },
+            ].map((link) => (
+              <NavLink
+                key={link.path}
+                to={link.path}
+                className={({ isActive }) =>
+                  `text-base px-3 py-1 rounded-md font-medium transition ${
+                    isActive
+                      ? "bg-purple-600 text-white"
+                      : "text-gray-300 hover:text-purple-400 hover:bg-gray-800"
+                  }`
+                }
+              >
+                {link.name}
+              </NavLink>
+            ))}
+          </div>
+
+          {/* Right Actions */}
+          <div className="flex items-center gap-3 flex-wrap justify-end w-full md:w-auto">
+            {/* Search */}
+            <div className="flex items-center bg-gray-800 rounded px-2 w-full sm:w-auto">
+              <input
+                type="text"
+                placeholder="Search…"
+                className="px-2 py-2 bg-transparent text-base text-gray-200 placeholder-gray-400 focus:outline-none w-full sm:w-48"
+              />
+              <button className="px-1 text-gray-400 hover:text-purple-400 text-lg">
+                🔍
+              </button>
+            </div>
+
+            {/* Seller Button */}
+            <button
+              onClick={handleSellerClick}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 text-sm rounded-md shadow"
+            >
+              As a Seller
+            </button>
+
+            {/* Icons */}
+            <button className="text-gray-300 hover:text-purple-400 text-xl">
+              ❤️
+            </button>
+            <button className="text-gray-300 hover:text-purple-400 text-xl">
+              🛒
+            </button>
+            <button className="text-gray-300 hover:text-purple-400 text-xl">
+              👤
+            </button>
+
+            {/* Mobile Hamburger */}
+            <button className="md:hidden text-gray-300 hover:text-purple-400 text-2xl">
+              ☰
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
