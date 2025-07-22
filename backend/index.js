@@ -33,6 +33,9 @@ app.get("/logout", (req, res) => {
 
 app.use("/api", require("./routes/auth"));
 app.use("/api/products",require("./routes/productRoutes"));
+app.use("/api/orders",require("./routes/orderRoutes"));
+app.use("/api/reviews",require("./routes/reviewRoutes"))
+
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

@@ -21,6 +21,10 @@ import Signin from './components/SignIn';
 import { useState } from 'react';
 import AddProduct from './components/AddProduct';
 import EditProduct from './components/EditProduct';
+import MyOrders from './components/MyOrders';
+import ProductReviews from './components/ProductReviews';
+
+
 import { useParams } from 'react-router-dom';
 
 const Page = ({ title, emoji }) => (
@@ -65,6 +69,8 @@ function App() {
 
 <Route path="/add-product" element={<AddProduct/>}/>
 <Route path="/edit-product/:id" element={<EditProduct/>}/>
+<Route path="/my-orders" element={<MyOrders />} />
+ <Route path="/product-reviews/:productId" element={<ProductReviews />} />
       </Routes>
 
       

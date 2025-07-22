@@ -8,7 +8,7 @@ const TempSignup = require("../models/TempSignup");
 
 
 const transporter = nodemailer.createTransport({
-host: process.env.host,
+host: process.env.HOST,
 port: 465,
 secure:true,
 auth: {
@@ -18,31 +18,46 @@ pass: process.env.EMAIL_PASS,
 debug:true,
 logger:true
 });
-exports.signup= async (req, res) => {
-  const { name, email, password, role } = req.body;
+exports.signup = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
 
-  const existingUser = await User.findOne({ email });
-  if (existingUser) return res.status(400).json({ message: "Email already registered" });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const otpExpires = Date.now() + 15 * 60 * 1000; // 15 min
-  const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = Date.now() + 15 * 60 * 1000; // 15 min
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-  await TempSignup.deleteOne({ email });
+    await TempSignup.deleteOne({ email });
 
-  const temp = new TempSignup({ name, email, password: hashedPassword, role, otp, otpExpires });
-  await temp.save();
+    const temp = new TempSignup({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      otp,
+      otpExpires,
+    });
+    await temp.save();
 
-  await transporter.sendMail({
-  from: '"Faisal" <dev-faisal@breezbyte.com>',  // SAME as SMTP auth user
+    await transporter.sendMail({
+      from: '"Faisal" <dev-faisal@breezbyte.com>', // SAME as SMTP auth user
+      to: email,
+      subject: "Your OTP for Signup",
+      html: `<h3>Your OTP is: ${otp}</h3><p>Expires in 15 minutes.</p>`,
+    });
 
-    to: email,
-    subject: "Your OTP for Signup",
-    html: `<h3>Your OTP is: ${otp}</h3><p>Expires in 15 minutes.</p>`,
-  });
+    res.json({ message: "OTP sent to email" });
 
-  res.json({ message: "OTP sent to email" });
-}
+  } catch (err) {
+    console.error("🔥 Error in signup:", err);  // print full error to terminal
+    res.status(500).json({ message: err.message });
+  }
+};
+
 
 
 exports.verifyotp=async (req, res) => {
