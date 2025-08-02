@@ -65,6 +65,15 @@ exports.getMyProducts = async (req, res) => {
   const products = await Product.find({ seller: req.user.id });
   res.json(products);
 };
+exports.getallProducts=async(req,res)=>{
+  try {
+    const products = await Product.find();
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch products", error: error.message });
+  }
+};
+
 
 exports.getTopProducts = async (req, res) => {
   const products = await Product.find()
@@ -79,3 +88,11 @@ exports.getSellerStats = async (req, res) => {
   const totalRevenue = products.reduce((acc, p) => acc + p.salesCount * p.price, 0);
   res.json({ totalSales, totalRevenue });
 };
+exports.getByCategory = async (req, res) => {
+  const categoryParam = req.params.cat.toLowerCase();
+  const products = await Product.find({
+    category: { $regex: new RegExp(`^${categoryParam}$`, "i") } // case-insensitive match
+  });
+  res.json(products);
+};
+

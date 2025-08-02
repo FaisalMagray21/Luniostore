@@ -23,7 +23,7 @@ import AddProduct from './components/AddProduct';
 import EditProduct from './components/EditProduct';
 import MyOrders from './components/MyOrders';
 import ProductReviews from './components/ProductReviews';
-
+import AddBlog from './components/AddBlog';
 
 import { useParams } from 'react-router-dom';
 
@@ -66,6 +66,7 @@ function App() {
 <Route path="/verify-otp" element={<VerifyOtp />} />
 <Route path="/reset-password" element={<ResetPassword />} />
 <Route path="/verify-forgot" element={<VerifyForgot />} />
+<Route path="/add-blog" element={<AddBlog/>}/>
 
 <Route path="/add-product" element={<AddProduct/>}/>
 <Route path="/edit-product/:id" element={<EditProduct/>}/>

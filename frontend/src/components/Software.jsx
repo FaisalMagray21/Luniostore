@@ -1,10 +1,24 @@
-import products from "../data/product";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Software = () => {
+  const [softwareProducts, setSoftwareProducts] = useState([]);
   const navigate = useNavigate();
 
-  const softwareProducts = products.filter(p => p.category === "Software");
+  useEffect(() => {
+    const fetchSoftware = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/products/category/Software");
+        const softwareOnly = res.data.filter((p) => p.category.toLowerCase() === "software");
+        setSoftwareProducts(softwareOnly);
+      } catch (err) {
+        console.error("Failed to fetch software products", err);
+      }
+    };
+
+    fetchSoftware();
+  }, []);
 
   return (
     <div className="bg-gray-950 text-gray-200 min-h-screen py-8">
@@ -22,12 +36,12 @@ const Software = () => {
                 className="cursor-pointer relative"
               >
                 <img
-                  src={p.img}
+                  src={`http://localhost:5000/uploads/${p.images?.[0] || p.images}`}
                   alt={p.name}
                   className="w-full h-40 object-cover"
                 />
-                <span className="absolute top-2 left-2 bg-indigo-600 text-xs px-2 py-1 rounded-full">
-                  New
+                <span className="absolute top-2 left-2 bg-blue-600 text-xs px-2 py-1 rounded-full">
+                  Featured
                 </span>
               </div>
 
@@ -36,19 +50,19 @@ const Software = () => {
                 <p className="text-sm text-gray-300 mb-4">{p.desc}</p>
 
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-cyan-400 font-bold">${p.price}</span>
+                  <span className="text-green-400 font-bold">${p.price}</span>
                   <span className="text-yellow-400 text-sm">⭐ {p.rating}</span>
                 </div>
 
                 <div className="flex gap-2">
                   <button
                     onClick={() => navigate(`/checkout?product=${p.name}`)}
-                    className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs px-3 py-1 rounded shadow"
+                    className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded shadow"
                   >
-                    Shop Now
+                    Buy Now
                   </button>
-                  <button className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1 rounded shadow">
-                    ❤️ Favorite
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded shadow">
+                    💾 Save
                   </button>
                 </div>
               </div>

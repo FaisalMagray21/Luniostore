@@ -1,10 +1,24 @@
-import products from "../data/product";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Hardware = () => {
+  const [hardwareProducts, setHardwareProducts] = useState([]);
   const navigate = useNavigate();
 
-  const hardwareProducts = products.filter(p => p.category === "Hardware");
+  useEffect(() => {
+    const fetchHardware = async () => {
+      try {
+const res = await axios.get("http://localhost:5000/api/products/category/Hardware");
+        const hardwareOnly = res.data.filter((p) => p.category.toLowerCase() === "hardware");
+        setHardwareProducts(hardwareOnly);
+      } catch (err) {
+        console.error("Failed to fetch hardware products", err);
+      }
+    };
+
+    fetchHardware();
+  }, []);
 
   return (
     <div className="bg-gray-950 text-gray-200 min-h-screen py-8">
@@ -21,11 +35,12 @@ const Hardware = () => {
                 onClick={() => navigate(`/product/${p.name}`)}
                 className="cursor-pointer relative"
               >
-                <img
-                  src={p.img}
-                  alt={p.name}
-                  className="w-full h-40 object-cover"
-                />
+               <img
+  src={`http://localhost:5000/uploads/${p.images}`} // Make sure p.img contains just the filename
+  alt={p.name}
+  className="w-full h-40 object-cover"
+/>
+
                 <span className="absolute top-2 left-2 bg-purple-600 text-xs px-2 py-1 rounded-full">
                   New
                 </span>
@@ -41,7 +56,6 @@ const Hardware = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  {/* Shop Now → goes to checkout with product info */}
                   <button
                     onClick={() => navigate(`/checkout?product=${p.name}`)}
                     className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs px-3 py-1 rounded shadow"

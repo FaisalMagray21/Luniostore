@@ -17,6 +17,8 @@ router.delete("/:id", auth, productController.deleteProduct);
 
 // Get my products
 router.get("/my", auth, productController.getMyProducts);
+router.get("/category/:cat", productController.getByCategory);
+router.get("/all",productController.getallProducts);
 
 // Analytics
 router.get("/top", productController.getTopProducts);
