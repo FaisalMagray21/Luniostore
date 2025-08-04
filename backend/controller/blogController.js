@@ -10,7 +10,7 @@ exports.createBlog = async (req, res) => {
       title,
       content,
       image,
-      user: req.user.id, // from auth middleware
+      seller: req.user.id, // from auth middleware
     });
 
     await newBlog.save();

@@ -8,7 +8,7 @@ const commentSchema = new mongoose.Schema({
 
 const blogSchema = new mongoose.Schema({
   seller: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+  product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required:false },
   title: { type: String, required: true },
   content: { type: String, required: true, maxlength: 250 },
   image: { type: String },

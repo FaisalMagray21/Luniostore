@@ -8,7 +8,7 @@ const AddBlog = () => {
     title: "",
     content: "",
     category: "",
-    product: "",
+    
     image: null,
   });
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ const AddBlog = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      navigate("/seller-dashboard");
+      navigate("/seller/dashboard");
     } catch (error) {
       console.error("Failed to post blog:", error);
     }
@@ -85,15 +85,7 @@ const AddBlog = () => {
 
           </div>
 
-          <div>
-            <label className="block text-gray-700 font-semibold mb-1">Related Product ID (optional)</label>
-            <input
-              name="product"
-              placeholder="Enter product ID if any"
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            />
-          </div>
+         
 
           <div>
             <label className="block text-gray-700 font-semibold mb-1">Blog Image</label>
