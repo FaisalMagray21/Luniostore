@@ -32,7 +32,7 @@ const Software = () => {
               className="bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl transform hover:-translate-y-1 transition duration-300"
             >
               <div
-                onClick={() => navigate(`/product/${p.name}`)}
+                onClick={() => navigate(`/product/${p._id}`)}
                 className="cursor-pointer relative"
               >
                 <img

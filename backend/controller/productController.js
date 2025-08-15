@@ -75,12 +75,19 @@ exports.getallProducts=async(req,res)=>{
 };
 
 
+
 exports.getTopProducts = async (req, res) => {
-  const products = await Product.find()
-    .sort({ salesCount: -1 })
-    .limit(5);
-  res.json(products);
+  try {
+    const products = await Product.find()
+      .sort({ salesCount: -1, rating: -1 })
+      .limit(8);
+    res.status(200).json(products); // fixed here
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch top products", error: error.message });
+  }
 };
+
+
 
 exports.getSellerStats = async (req, res) => {
   const products = await Product.find({ seller: req.user.id });
@@ -96,3 +103,53 @@ exports.getByCategory = async (req, res) => {
   res.json(products);
 };
 
+
+exports.getProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id).populate("seller", "name email");
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch product", error: error.message });
+  }
+};
+
+
+
+
+exports.rateProduct = async (req, res) => {
+  try {
+    const { rating } = req.body;
+    const userId = req.user.id;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: "Rating must be between 1 and 5" });
+    }
+
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Agar user ne pehle rating di hai, update karo
+    const existingRating = product.ratings.find(r => r.user.toString() === userId);
+    if (existingRating) {
+      existingRating.rating = rating;
+    } else {
+      product.ratings.push({ user: userId, rating });
+    }
+
+    // Average rating calculate
+    const avgRating =
+      product.ratings.reduce((acc, r) => acc + r.rating, 0) / product.ratings.length;
+    product.rating = avgRating;
+
+    await product.save();
+
+    res.json({ message: "Rating submitted successfully", product });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

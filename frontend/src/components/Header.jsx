@@ -6,10 +6,8 @@ const Header = () => {
   const handleSellerClick = () => {
     const token = localStorage.getItem("token");
     if (token) {
-      // if already signed in
       navigate("/seller/dashboard");
     } else {
-      // not signed in, go to sign-in page with role param
       navigate("/signin?role=seller");
     }
   };
@@ -78,13 +76,22 @@ const Header = () => {
             </button>
 
             {/* Icons */}
-            <button className="text-gray-300 hover:text-purple-400 text-xl">
+            <button
+              onClick={() => navigate("/favorites")}
+              className="text-gray-300 hover:text-purple-400 text-xl"
+            >
               ❤️
             </button>
-            <button className="text-gray-300 hover:text-purple-400 text-xl">
+            <button
+              onClick={() => navigate("/cart")}
+              className="text-gray-300 hover:text-purple-400 text-xl"
+            >
               🛒
             </button>
-            <button className="text-gray-300 hover:text-purple-400 text-xl">
+            <button
+              onClick={() => navigate("/profile")}
+              className="text-gray-300 hover:text-purple-400 text-xl"
+            >
               👤
             </button>
 

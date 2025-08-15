@@ -2,7 +2,8 @@ const express = require("express");
 const dotenv = require("dotenv");
 const path = require("path");
 const cors = require("cors");
- 
+ const favoritesRoutes = require("./routes/favorites");
+
 const blogRoutes = require("./routes/blogRoutes");
 
 
@@ -31,11 +32,14 @@ app.use(cors({
 app.get("/logout", (req, res) => {
   req.logout(() => res.redirect("/"));
 });
+app.use("/api/favorites", favoritesRoutes);
+
 
 app.use("/api", require("./routes/auth"));
 app.use("/api/products",require("./routes/productRoutes"));
 app.use("/api/orders",require("./routes/orderRoutes"));
 app.use("/api/reviews",require("./routes/reviewRoutes"));
+
 app.use("/api/blogs", blogRoutes);
 
 

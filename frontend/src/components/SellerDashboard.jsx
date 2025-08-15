@@ -182,7 +182,7 @@ const SellerDashboard = () => {
                   <div key={b._id} className="bg-white p-4 rounded shadow">
                     {b.image ? (
                       <img
-                  src={`http://localhost:5000/uploads/${b.image?.[0] || b.image}`}
+                  src={`http://localhost:5000/uploads/${b.image[0]}`}
                         alt="blog"
                         className="h-40 w-full object-cover rounded mb-3"
                       />

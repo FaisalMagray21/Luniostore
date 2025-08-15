@@ -57,7 +57,7 @@ const Services = () => {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => navigate(`/checkout?product=${p.name}`)}
+                    onClick={() => navigate(`/checkout?product=${p._id}`)}
                     className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs px-3 py-1 rounded shadow"
                   >
                     Hire Now

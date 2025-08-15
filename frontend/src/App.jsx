@@ -24,7 +24,7 @@ import EditProduct from './components/EditProduct';
 import MyOrders from './components/MyOrders';
 import ProductReviews from './components/ProductReviews';
 import AddBlog from './components/AddBlog';
-
+import Favourites from './components/Favourites';
 import { useParams } from 'react-router-dom';
 
 const Page = ({ title, emoji }) => (
@@ -51,10 +51,10 @@ function App() {
           <Route path="/services" element={<Services />} />
 
           <Route path="/blog" element={<Blog/>} />
-        <Route path="/blog/:id" element={<BlogDetail />} />
+        <Route path="/blogs/:id" element={<BlogDetail />} />
 
         <Route path="/contact" element={<Contact/>} />
-          <Route path="/product/:name" element={<ProductDetail />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
            <Route path="/signup" element={<SignUp setStep={setStep} setEmail={setEmail} />} />
            <Route path="/signin" element={<Signin/>} />
       {/* <Route path="/" element={<RoleSelection />} /> */}
@@ -67,6 +67,7 @@ function App() {
 <Route path="/reset-password" element={<ResetPassword />} />
 <Route path="/verify-forgot" element={<VerifyForgot />} />
 <Route path="/add-blog" element={<AddBlog/>}/>
+<Route path="/favorites" element={<Favourites />} />
 
 <Route path="/add-product" element={<AddProduct/>}/>
 <Route path="/edit-product/:id" element={<EditProduct/>}/>

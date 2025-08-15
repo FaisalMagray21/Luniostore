@@ -9,6 +9,9 @@ const productController = require("../controller/productController");
 // Add product
 router.post("/", auth, upload.array("images", 5), productController.addProduct);
 
+router.put("/:id/rate", auth, productController.rateProduct);
+
+
 // Edit product
 router.put("/:id", auth, productController.editProduct);
 
@@ -19,9 +22,11 @@ router.delete("/:id", auth, productController.deleteProduct);
 router.get("/my", auth, productController.getMyProducts);
 router.get("/category/:cat", productController.getByCategory);
 router.get("/all",productController.getallProducts);
+// Get product by ID
 
 // Analytics
 router.get("/top", productController.getTopProducts);
 router.get("/stats", auth, productController.getSellerStats);
+router.get("/:id", productController.getProductById);
 
 module.exports = router;

@@ -92,7 +92,7 @@ const AddBlog = () => {
             <input
               type="file"
               name="image"
-              accept="image/*"
+             // accept="image/*"
               onChange={handleChange}
               className="w-full text-gray-700"
             />

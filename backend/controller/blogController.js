@@ -4,13 +4,13 @@ const Blog = require("../models/Blog");
 exports.createBlog = async (req, res) => {
   try {
     const { title, content } = req.body;
-    const image = req.file?.filename; // image from multer
+    const image = req.file?.filename;
 
     const newBlog = new Blog({
       title,
       content,
       image,
-      seller: req.user.id, // from auth middleware
+      seller: req.user.id,
     });
 
     await newBlog.save();
@@ -30,20 +30,69 @@ exports.getAllBlogs = async (req, res) => {
   res.json(blogs);
 };
 
-// Like a blog
+// Like/Unlike Blog
 exports.likeBlog = async (req, res) => {
-  const blog = await Blog.findById(req.params.id);
-  if (!blog.likes.includes(req.user.id)) {
-    blog.likes.push(req.user.id);
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ error: "Blog not found" });
+
+    const userId = req.user.id;
+    const alreadyLiked = blog.likes.includes(userId);
+
+    if (alreadyLiked) {
+      blog.likes = blog.likes.filter(id => id.toString() !== userId);
+    } else {
+      blog.likes.push(userId);
+    }
+
     await blog.save();
+res.json({ likes: blog.likes, count: blog.likes.length, liked: !alreadyLiked });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  res.json(blog);
 };
 
-// Comment on a blog
-exports.commentBlog = async (req, res) => {
-  const blog = await Blog.findById(req.params.id);
-  blog.comments.push({ user: req.user.id, comment: req.body.comment });
-  await blog.save();
-  res.json(blog);
+
+
+// Get Blog by ID
+exports.getBlogById = async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id)
+      .populate("seller", "name")
+      .populate("likes", "name")
+      .populate("comments.user", "name");
+
+    if (!blog) return res.status(404).json({ error: "Blog not found" });
+
+    res.json(blog);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
+
+
+
+exports.commentBlog = async (req, res) => {
+  try {
+    if (!req.body.comment?.trim()) {
+      return res.status(400).json({ error: "Comment cannot be empty" });
+    }
+
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ error: "Blog not found" });
+
+    blog.comments.push({
+      user: req.user.id,
+      comment: req.body.comment
+    });
+
+    await blog.save();
+    const updatedBlog = await Blog.findById(req.params.id)
+      .populate("comments.user", "name"); // ✅ Return with names
+
+res.json(updatedBlog);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+

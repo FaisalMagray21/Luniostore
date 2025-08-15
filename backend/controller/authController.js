@@ -17,7 +17,7 @@ pass: process.env.EMAIL_PASS,
 },
 debug:true,
 logger:true
-});
+});  
 exports.signup = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
