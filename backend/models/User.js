@@ -5,7 +5,8 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   password: String,
   role: { type: String, enum: ["buyer", "seller"], default: "buyer" },
-    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Item" }], // Array of product IDs
+// User.js
+favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
 
 
   resetOtp: String,

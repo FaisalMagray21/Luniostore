@@ -26,6 +26,8 @@ router.get("/all",productController.getallProducts);
 
 // Analytics
 router.get("/top", productController.getTopProducts);
+router.get("/search",productController.searchProducts);
+
 router.get("/stats", auth, productController.getSellerStats);
 router.get("/:id", productController.getProductById);
 

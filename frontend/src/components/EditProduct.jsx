@@ -3,9 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 const EditProduct = () => {
-  const { id } = useParams();
+  const { sellerId, productId } = useParams();
   const navigate = useNavigate();
-  const [product, setProduct] = useState(null);
+
+  // ✅ Parse the user info properly
+  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+  const token = userInfo?.token;
+
   const [form, setForm] = useState({
     name: "",
     category: "",
@@ -13,54 +17,68 @@ const EditProduct = () => {
     price: "",
   });
 
-  const token = localStorage.getItem("token");
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // ✅ Fetch single product by ID
   const fetchProduct = async () => {
-    const res = await axios.get(`http://localhost:5000/api/products/my`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const found = res.data.find((p) => p._id === id);
-    if (!found) {
-      alert("Product not found or unauthorized");
-      navigate("/");
-      return;
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/products/${productId}`,
+        { headers: { Authorization: `Bearer ${token}` } } // include token here
+      );
+
+      const p = res.data;
+
+      setForm({
+        name: p.name || "",
+        category: p.category || "",
+        description: p.description || "",
+        price: p.price || "",
+      });
+      setImages(p.images || []);
+    } catch (err) {
+      console.error("❌ Error fetching product:", err);
+      alert("Error fetching product details");
+    } finally {
+      setLoading(false);
     }
-    setProduct(found);
-    setForm({
-      name: found.name,
-      category: found.category,
-      description: found.description,
-      price: found.price,
-    });
   };
 
+  // ✅ Handle input changes
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // ✅ Submit update
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await axios.put(
-      `http://localhost:5000/api/products/${id}`,
-      form,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    alert("Product updated!");
-    navigate("/dashboard");
+
+    try {
+      await axios.put(
+        `http://localhost:5000/api/products/${productId}`,
+        form,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("✅ Product updated successfully!");
+      navigate(`/seller/dashboard/${sellerId}`);
+    } catch (err) {
+      console.error("❌ Error updating product:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "Error updating product");
+    }
   };
 
   useEffect(() => {
     fetchProduct();
-  }, []);
+  }, [productId]);
 
-  if (!product) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center items-center">
       <div className="bg-white p-6 rounded shadow-md w-full max-w-lg">
         <h2 className="text-2xl font-bold mb-4">Edit Product</h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium">Name</label>
@@ -121,21 +139,21 @@ const EditProduct = () => {
           </button>
         </form>
 
-        {/* Show current images */}
+        {/* ✅ Show current images */}
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-2">Current Images</h3>
           <div className="grid grid-cols-2 gap-2">
-            {product.images && product.images.length > 0 ? (
-              product.images.map((img, idx) => (
+            {images.length > 0 ? (
+              images.map((img, i) => (
                 <img
-                  key={idx}
+                  key={i}
                   src={`http://localhost:5000/uploads/${img}`}
-                  alt={`Product ${idx}`}
+                  alt={`Product ${i}`}
                   className="w-full h-32 object-cover rounded"
                 />
               ))
             ) : (
-              <p>No images available.</p>
+              <p>No images available</p>
             )}
           </div>
         </div>

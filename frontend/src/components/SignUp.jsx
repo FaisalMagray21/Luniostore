@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext); // 👈 login function le lo
 
   const [form, setForm] = useState({
     name: "",
@@ -21,8 +23,17 @@ const Signup = () => {
       const res = await axios.post("http://localhost:5000/api/signup", form);
       setMsg(res.data.message);
 
-      // navigate to verify-otp and pass email
-      navigate("/verify-otp", { state: { email: form.email } });
+      // 👇 OTP verify hone ke baad login call karna hoga
+      // navigate("/verify-otp", { state: { email: form.email } });
+
+      // agar backend signup ke baad hi token bhejta hai:
+      if (res.data.token) {
+        login({ token: res.data.token, user: res.data.user });
+        navigate("/"); // dashboard par bhejo
+      } else {
+        // agar backend pehle OTP verify mangta hai:
+        navigate("/verify-otp", { state: { email: form.email } });
+      }
     } catch (err) {
       setMsg(err.response?.data?.message || err.message);
     }

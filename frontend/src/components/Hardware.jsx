@@ -14,8 +14,9 @@ const Hardware = () => {
         const res = await axios.get(
           "http://localhost:5000/api/products/category/Hardware"
         );
+        // Ensure category comparison is case-insensitive
         const hardwareOnly = res.data.filter(
-          (p) => p.category.toLowerCase() === "hardware"
+          (p) => p.category?.toLowerCase() === "hardware"
         );
         setHardwareProducts(hardwareOnly);
       } catch (err) {
@@ -53,16 +54,22 @@ const Hardware = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-20 text-white">Loading...</div>;
+    return (
+      <div className="text-center py-20 text-white">Loading...</div>
+    );
   }
 
   return (
     <div className="bg-gray-950 text-gray-200 min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-6 text-center">Hardware Products</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center">
+          Hardware Products
+        </h1>
 
         {hardwareProducts.length === 0 ? (
-          <p className="text-center text-gray-400">No hardware products found.</p>
+          <p className="text-center text-gray-400">
+            No hardware products found.
+          </p>
         ) : (
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {hardwareProducts.map((p) => (
@@ -74,11 +81,17 @@ const Hardware = () => {
                   onClick={() => navigate(`/product/${p._id}`)}
                   className="cursor-pointer relative"
                 >
-                  <img
-                    src={`http://localhost:5000/uploads/${p.images[0]}`} 
-                    alt={p.name}
-                    className="w-full h-40 object-cover"
-                  />
+                  {p.images?.[0] ? (
+                    <img
+                      src={`http://localhost:5000/uploads/${p.images[0]}`} 
+                      alt={p.name}
+                      className="w-full h-40 object-cover"
+                    />
+                  ) : (
+                    <div className="h-40 bg-gray-700 flex justify-center items-center text-gray-400">
+                      No Image
+                    </div>
+                  )}
                   <span className="absolute top-2 left-2 bg-purple-600 text-xs px-2 py-1 rounded-full">
                     New
                   </span>
@@ -86,11 +99,11 @@ const Hardware = () => {
 
                 <div className="p-4">
                   <h4 className="text-lg font-semibold">{p.name}</h4>
-                  <p className="text-sm text-gray-300 mb-4">{p.desc}</p>
+                  <p className="text-sm text-gray-300 mb-4">{p.description || p.desc}</p>
 
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-cyan-400 font-bold">${p.price}</span>
-                    <span className="text-yellow-400 text-sm">⭐ {p.rating}</span>
+                    <span className="text-yellow-400 text-sm">⭐ {p.rating || 0}</span>
                   </div>
 
                   <div className="flex gap-2">

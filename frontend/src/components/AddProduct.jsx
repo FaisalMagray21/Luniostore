@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
 
 const AddProduct = () => {
   const [form, setForm] = useState({
@@ -11,27 +11,32 @@ const AddProduct = () => {
   });
   const [images, setImages] = useState([]);
   const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
+  const { axiosAuth } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
+    setMsg("");
+    setLoading(true);
+
     const data = new FormData();
     Object.entries(form).forEach(([k, v]) => data.append(k, v));
     images.forEach((img) => data.append("images", img));
 
     try {
-      const res = await axios.post("http://localhost:5000/api/products", data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
+      const res = await axiosAuth.post("/products", data, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      setMsg(res.data.message);
+      setMsg(res.data.message || "Product added successfully!");
       navigate("/seller/dashboard");
     } catch (err) {
+      console.error(err);
       setMsg(err.response?.data?.message || err.message);
     }
+
+    setLoading(false);
   };
 
   return (
@@ -39,6 +44,7 @@ const AddProduct = () => {
       <div className="bg-white p-8 rounded shadow w-full max-w-md">
         <h2 className="text-2xl font-bold mb-4">➕ Add Product</h2>
         {msg && <p className="mb-4 text-red-600">{msg}</p>}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             placeholder="Product Name"
@@ -59,7 +65,9 @@ const AddProduct = () => {
           <textarea
             placeholder="Description"
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, description: e.target.value })
+            }
             required
             className="w-full px-4 py-2 bg-gray-100 rounded"
           />
@@ -79,9 +87,10 @@ const AddProduct = () => {
           />
           <button
             type="submit"
+            disabled={loading}
             className="w-full bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded"
           >
-            Add Product
+            {loading ? "Adding..." : "Add Product"}
           </button>
         </form>
       </div>

@@ -56,13 +56,13 @@ const Software = () => {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => navigate(`/checkout?product=${p.name}`)}
-                    className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded shadow"
+                    onClick={() => navigate(`/checkout?product=${p._id}`)}
+                    className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs px-3 py-1 rounded shadow"
                   >
-                    Buy Now
+                    Shop Now
                   </button>
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded shadow">
-                    💾 Save
+                  <button className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1 rounded shadow">
+                    ❤️ Favorite
                   </button>
                 </div>
               </div>

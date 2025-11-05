@@ -9,8 +9,8 @@ const Services = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/products/category/Service");
-        const serviceOnly = res.data.filter((p) => p.category.toLowerCase() === "service");
+        const res = await axios.get("http://localhost:5000/api/products/category/Services");
+        const serviceOnly = res.data.filter((p) => p.category.toLowerCase() === "services");
         setServiceProducts(serviceOnly);
       } catch (err) {
         console.error("Failed to fetch service products", err);
@@ -60,7 +60,7 @@ const Services = () => {
                     onClick={() => navigate(`/checkout?product=${p._id}`)}
                     className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs px-3 py-1 rounded shadow"
                   >
-                    Hire Now
+                    Shop Now
                   </button>
                   <button className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1 rounded shadow">
                     ❤️ Favorite

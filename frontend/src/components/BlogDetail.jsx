@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const BlogDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { userInfo } = useContext(AuthContext);
+
   const [blog, setBlog] = useState(null);
   const [likes, setLikes] = useState(0);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const token = localStorage.getItem("token");
+  const token = userInfo?.token;
 
   const fetchBlog = async () => {
     try {
@@ -26,19 +30,18 @@ const BlogDetail = () => {
   }, [id]);
 
   const handleLike = async () => {
+    if (!token) {
+      navigate("/signin");
+      return;
+    }
+
     try {
       const res = await axios.put(
         `http://localhost:5000/api/blogs/like/${id}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      // Agar backend poora blog object return kare
-      if (res.data.likes && Array.isArray(res.data.likes)) {
-        setLikes(res.data.likes.length);
-      } else if (typeof res.data.likes === "number") {
-        setLikes(res.data.likes);
-      }
+      setLikes(res.data.count);
     } catch (err) {
       console.error("Error liking blog:", err);
     }
@@ -48,17 +51,18 @@ const BlogDetail = () => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
+    if (!token) {
+      navigate("/signin");
+      return;
+    }
+
     try {
       const res = await axios.post(
         `http://localhost:5000/api/blogs/comment/${id}`,
         { comment: newComment },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      // Agar backend poora blog object return kare
-      if (res.data.comments && Array.isArray(res.data.comments)) {
-        setComments(res.data.comments);
-      }
+      setComments(res.data.comments);
       setNewComment("");
     } catch (err) {
       console.error("Error adding comment:", err);
@@ -95,7 +99,11 @@ const BlogDetail = () => {
         <div className="flex items-center gap-4 mb-6">
           <button
             onClick={handleLike}
-            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 rounded"
+            className={`px-4 py-2 rounded ${
+              token
+                ? "bg-cyan-500 hover:bg-cyan-600"
+                : "bg-gray-600 cursor-not-allowed"
+            }`}
           >
             👍 Like
           </button>
@@ -108,9 +116,10 @@ const BlogDetail = () => {
           {comments.length > 0 ? (
             <ul className="mb-4">
               {comments.map((c, idx) => (
-                <li key={idx} className="mb-2 border-b border-gray-700 pb-2">
-                  <p className="text-gray-300">{c.comment}</p>
+                <li key={idx} className="mb-3 border-b border-gray-700 pb-2">
+                  <p className="text-gray-200">{c.comment}</p>
                   <p className="text-gray-500 text-sm">
+                    By <span className="font-medium">{c.user?.name || "Unknown"}</span> •{" "}
                     {new Date(c.createdAt).toLocaleString()}
                   </p>
                 </li>
@@ -121,21 +130,30 @@ const BlogDetail = () => {
           )}
 
           {/* Add Comment Form */}
-          <form onSubmit={handleCommentSubmit} className="flex gap-2">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Write a comment..."
-              className="flex-1 px-3 py-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 rounded"
+          {token ? (
+            <form onSubmit={handleCommentSubmit} className="flex gap-2">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Write a comment..."
+                className="flex-1 px-3 py-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 rounded"
+              >
+                Post
+              </button>
+            </form>
+          ) : (
+            <p
+              className="text-cyan-400 cursor-pointer hover:underline"
+              onClick={() => navigate("/signin")}
             >
-              Post
-            </button>
-          </form>
+              Login to like or comment.
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -1,108 +1,144 @@
-// AddBlog.jsx
-import { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useContext } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const AddBlog = () => {
+  const { sellerId } = useParams(); // 🧭 Get sellerId from URL
+  const navigate = useNavigate();
+  const { axiosAuth } = useContext(AuthContext); // 🔐 Authenticated axios instance
+
   const [form, setForm] = useState({
     title: "",
     content: "",
     category: "",
-    
     image: null,
   });
-  const navigate = useNavigate();
+  const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  // Handle Input Change
   const handleChange = (e) => {
-    if (e.target.name === "image") {
-      setForm({ ...form, image: e.target.files[0] });
-    } else {
-      setForm({ ...form, [e.target.name]: e.target.value });
-    }
+    const { name, value, files } = e.target;
+    setForm((prev) => ({ ...prev, [name]: files ? files[0] : value }));
   };
 
+  // Handle Form Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
-    const data = new FormData();
-    for (const key in form) data.append(key, form[key]);
+    setMsg("");
+    setLoading(true);
 
     try {
-      await axios.post("http://localhost:5000/api/blogs", data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
+      const data = new FormData();
+      Object.entries(form).forEach(([key, val]) => data.append(key, val));
+      data.append("sellerId", sellerId); // 🆔 Include sellerId in payload
+
+      const res = await axiosAuth.post("/blogs", data, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      navigate("/seller/dashboard");
-    } catch (error) {
-      console.error("Failed to post blog:", error);
+
+      setMsg(res.data.message || "✅ Blog added successfully!");
+
+      // 🧭 Redirect to Seller Dashboard after short delay
+      setTimeout(() => {
+        navigate(`/seller/dashboard/${sellerId}`);
+      }, 1000);
+    } catch (err) {
+      console.error(err);
+      setMsg(err.response?.data?.message || "❌ Failed to add blog.");
     }
+
+    setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-white shadow-lg rounded-lg p-8">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">📝 Add a New Blog</h2>
+      <div className="w-full max-w-2xl bg-white shadow-lg rounded-xl p-8">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+          📝 Add a New Blog
+        </h2>
+        {msg && (
+          <p
+            className={`text-center mb-4 font-semibold ${
+              msg.includes("✅") ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {msg}
+          </p>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Title */}
           <div>
-            <label className="block text-gray-700 font-semibold mb-1">Title</label>
+            <label className="block text-gray-700 font-semibold mb-1">
+              Title
+            </label>
             <input
               name="title"
-              placeholder="Enter blog title"
+              value={form.title}
               onChange={handleChange}
+              placeholder="Enter blog title"
               required
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500"
             />
           </div>
 
+          {/* Content */}
           <div>
-            <label className="block text-gray-700 font-semibold mb-1">Content (Max 250 words)</label>
+            <label className="block text-gray-700 font-semibold mb-1">
+              Content
+            </label>
             <textarea
               name="content"
-              placeholder="Write your blog content..."
-              maxLength={250}
-              rows="5"
+              value={form.content}
               onChange={handleChange}
+              rows="5"
+              placeholder="Write your blog content..."
               required
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500"
             />
           </div>
 
+          {/* Category */}
           <div>
-           <select
-  name="category"
-  value={form.category}
-  onChange={handleChange}
-  required
-  className="w-full px-3 py-2 text-black rounded"
->
-  <option value="">Select Category</option>
-  <option value="Hardware">Hardware</option>
-  <option value="Software">Software</option>
-  <option value="Services">Services</option>
-</select>
-
+            <label className="block text-gray-700 font-semibold mb-1">
+              Category
+            </label>
+            <select
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              required
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-cyan-500"
+            >
+              <option value="">Select Category</option>
+              <option value="Hardware">Hardware</option>
+              <option value="Software">Software</option>
+              <option value="Services">Services</option>
+            </select>
           </div>
 
-         
-
+          {/* Image */}
           <div>
-            <label className="block text-gray-700 font-semibold mb-1">Blog Image</label>
+            <label className="block text-gray-700 font-semibold mb-1">
+              Upload Image
+            </label>
             <input
               type="file"
               name="image"
-             // accept="image/*"
+              accept="image/*"
               onChange={handleChange}
               className="w-full text-gray-700"
             />
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
+            disabled={loading}
             className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition-all"
           >
-            📤 Submit Blog
+            {loading ? "Submitting..." : "📤 Submit Blog"}
           </button>
         </form>
       </div>

@@ -1,3 +1,4 @@
+const Order = require("../models/Order");
 const Product = require("../models/Product");
 
 exports.addProduct = async (req, res) => {
@@ -89,12 +90,36 @@ exports.getTopProducts = async (req, res) => {
 
 
 
+
 exports.getSellerStats = async (req, res) => {
-  const products = await Product.find({ seller: req.user.id });
-  const totalSales = products.reduce((acc, p) => acc + p.salesCount, 0);
-  const totalRevenue = products.reduce((acc, p) => acc + p.salesCount * p.price, 0);
-  res.json({ totalSales, totalRevenue });
+  try {
+    const sellerId = req.user.id;
+
+    // Fetch seller's products
+    const products = await Product.find({ seller: sellerId });
+    const productIds = products.map(p => p._id);
+
+    // Fetch all orders containing those products
+    const orders = await Order.find({ product: { $in: productIds } });
+
+    let totalSales = 0;
+    let totalRevenue = 0;
+
+    orders.forEach(order => {
+      totalSales += order.quantity;
+      totalRevenue += order.totalPrice;
+    });
+
+    res.json({
+      totalSales,
+      totalRevenue,
+    });
+  } catch (err) {
+    console.error("Error in getSellerStats:", err);
+    res.status(500).json({ message: "Error fetching stats" });
+  }
 };
+
 exports.getByCategory = async (req, res) => {
   const categoryParam = req.params.cat.toLowerCase();
   const products = await Product.find({
@@ -153,3 +178,28 @@ exports.rateProduct = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+
+// 🔍 Case-insensitive search by product name
+exports.searchProducts = async (req, res) => {
+  try {
+    const q = req.query.q || "";
+    const regex = new RegExp(q, "i"); // case-insensitive
+
+    const products = await Product.find({
+      $or: [
+        { name: regex },
+        { category: regex },
+        { description: regex }
+      ],
+    });
+
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+
+

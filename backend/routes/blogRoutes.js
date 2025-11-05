@@ -9,6 +9,6 @@ router.get("/", blogController.getAllBlogs);
 router.get("/:id", blogController.getBlogById);
 router.put("/like/:id", auth, blogController.likeBlog);
 router.post("/comment/:id", auth, blogController.commentBlog);
-
+router.delete("/delete/:id", auth, blogController.deleteBlog);
 
 module.exports = router;
