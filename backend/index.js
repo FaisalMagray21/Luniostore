@@ -32,6 +32,10 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 //   req.logout(() => res.redirect("/"));
 // });
 
+app.get("/",(req,res)=>{
+  app.send("server running")
+})
+
 // --- API Routes ---
 app.use("/api/favorites", favoritesRoutes);
 app.use("/api", require("./routes/auth"));
