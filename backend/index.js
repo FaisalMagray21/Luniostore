@@ -33,7 +33,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // });
 
 app.get("/",(req,res)=>{
-  app.send("server running")
+  res.send("server running")
 })
 
 // --- API Routes ---
