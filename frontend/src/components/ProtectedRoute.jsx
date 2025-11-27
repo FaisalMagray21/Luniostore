@@ -4,7 +4,10 @@ import { AuthContext } from "../context/AuthContext";
 
 const ProtectedRoute = ({ children, role }) => {
   const { userInfo, loading } = useContext(AuthContext);
-  const { id } = useParams(); // url ka :id pakadna
+  const params = useParams();
+
+  // extract possible IDs from URL
+  const routeId = params.id || params.sellerId || params.userId;
 
   if (loading) {
     return (
@@ -14,7 +17,7 @@ const ProtectedRoute = ({ children, role }) => {
     );
   }
 
-  // ✅ user hi nahi mila → signin page bhej do
+  // ✅ user not logged in → signin page
   if (!userInfo) {
     return <Navigate to="/signin" replace />;
   }
@@ -24,8 +27,9 @@ const ProtectedRoute = ({ children, role }) => {
     return <Navigate to="/unauthorized" replace />;
   }
 
-  // ✅ agar id param diya hai toh woh current user id match kare
-  if (id && userInfo.user.id !== id) {
+  // ✅ if route has an id, make sure it matches current user
+  const userId = userInfo.user.id || userInfo.user._id;
+  if (routeId && userId !== routeId) {
     return <Navigate to="/unauthorized" replace />;
   }
 

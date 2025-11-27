@@ -168,18 +168,6 @@ const Header = () => {
             >
               ❤️
             </button>
-            <button
-              onClick={() => navigate("/cart")}
-              className="text-gray-300 hover:text-purple-400 text-xl"
-            >
-              🛒
-            </button>
-            <button
-              onClick={() => navigate("/profile")}
-              className="text-gray-300 hover:text-purple-400 text-xl"
-            >
-              👤
-            </button>
 
             {/* Mobile Hamburger */}
             <button

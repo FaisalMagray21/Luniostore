@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 const AddBlog = () => {
-  const { sellerId } = useParams(); // 🧭 Get sellerId from URL
+  const { id } = useParams(); // 🧭 Get sellerId from URL
   const navigate = useNavigate();
   const { axiosAuth } = useContext(AuthContext); // 🔐 Authenticated axios instance
 
@@ -16,22 +16,29 @@ const AddBlog = () => {
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Handle Input Change
+  // 🧠 Handle Input Change
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     setForm((prev) => ({ ...prev, [name]: files ? files[0] : value }));
   };
 
-  // Handle Form Submit
+  // 🧠 Handle Form Submit with Validation + Redirect
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMsg("");
+
+    // 🧩 Validation (Regression Check)
+    if (!form.title || !form.content || !form.category) {
+      setMsg("⚠️ Please fill all required fields before submitting!");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const data = new FormData();
       Object.entries(form).forEach(([key, val]) => data.append(key, val));
-      data.append("sellerId", sellerId); // 🆔 Include sellerId in payload
+      data.append("sellerId", id); // 🆔 Include sellerId in payload
 
       const res = await axiosAuth.post("/blogs", data, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -39,9 +46,9 @@ const AddBlog = () => {
 
       setMsg(res.data.message || "✅ Blog added successfully!");
 
-      // 🧭 Redirect to Seller Dashboard after short delay
+      // 🧭 Redirect to Seller Dashboard after short delay (Fixed path)
       setTimeout(() => {
-        navigate(`/seller/dashboard/${sellerId}`);
+        navigate(`/seller/dashboard/${id}`);
       }, 1000);
     } catch (err) {
       console.error(err);
@@ -57,6 +64,8 @@ const AddBlog = () => {
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
           📝 Add a New Blog
         </h2>
+
+        {/* Message */}
         {msg && (
           <p
             className={`text-center mb-4 font-semibold ${
@@ -136,7 +145,9 @@ const AddBlog = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition-all"
+            className={`w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition-all ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             {loading ? "Submitting..." : "📤 Submit Blog"}
           </button>

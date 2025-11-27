@@ -1,8 +1,10 @@
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 const AddProduct = () => {
+   const { id } = useParams();
+
   const [form, setForm] = useState({
     name: "",
     category: "hardware",
@@ -30,7 +32,7 @@ const AddProduct = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setMsg(res.data.message || "Product added successfully!");
-      navigate("/seller/dashboard");
+     navigate(`/seller/dashboard/${id}`);
     } catch (err) {
       console.error(err);
       setMsg(err.response?.data?.message || err.message);

@@ -82,12 +82,7 @@ else navigate("/");
           </button>
         </form>
 
-        <p className="mt-3 text-xs sm:text-sm text-center text-gray-400">
-          Forgot your password?{" "}
-          <Link to="/forgot" className="text-cyan-400 hover:underline">
-            Reset here
-          </Link>
-        </p>
+
 
         <p className="mt-2 text-xs sm:text-sm text-center text-gray-400">
           Don’t have an account?{" "}
