@@ -7,7 +7,6 @@ const mongoose = require("mongoose");
 
 const connectDB = require("./db/mongodb");
 
-
 const favoritesRoutes = require("./routes/favorites");
 const blogRoutes = require("./routes/blogRoutes");
 
@@ -15,28 +14,37 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-
 // --- MongoDB ---
-connectDB(); // connect via your existing mongodb file
-mongoose.set("strictQuery", false); // optional
+connectDB();
+mongoose.set("strictQuery", false);
 
-// --- Middleware ---
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://luniostore-frontend.vercel.app"
-  ],
-  credentials: true
-}));
+// --- Allowed Origins ---
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://luniostore-frontend.vercel.app",
+];
+
+// --- CORS Middleware ---
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+
+// --- Body Parsers ---
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// --- Static Files ---
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// // --- Auth/logout ---
-// app.get("/logout", (req, res) => {
-//   req.logout(() => res.redirect("/"));
-// });
 
 // --- API Routes ---
 app.use("/api/favorites", favoritesRoutes);
@@ -46,7 +54,8 @@ app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/reviews", require("./routes/reviewRoutes"));
 app.use("/api/blogs", blogRoutes);
 
-
 // --- Start Server ---
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
+server.listen(PORT, () =>
+  console.log(`🚀 Server running at http://localhost:${PORT}`)
+);
