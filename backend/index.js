@@ -21,7 +21,13 @@ connectDB(); // connect via your existing mongodb file
 mongoose.set("strictQuery", false); // optional
 
 // --- Middleware ---
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://luniostore-frontend.vercel.app"
+  ],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));

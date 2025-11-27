@@ -42,7 +42,8 @@ export const AuthProvider = ({ children }) => {
     const instance = axios.create({
       // ⚠️ Update this IP if needed (for React Native use your PC's local IP)
       //baseURL: "http://192.168.1.7:5000/",
-       baseURL: "http://localhost:5000/api/", // for web only
+      //  baseURL: "http://localhost:5000/api/",
+      baseURL:"https://luniostore-backend.vercel.app/api/",
     });
 
     // ✅ Attach token to every request
