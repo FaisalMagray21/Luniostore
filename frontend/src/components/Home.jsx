@@ -1,6 +1,5 @@
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
-import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
 const Home = () => {
@@ -9,9 +8,12 @@ const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // BASE URL for images (Vercel backend)
+  const IMAGE_BASE = "https://luniostore-backend.vercel.app";
+
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/products/top")
+    axiosAuth
+      .get("products/top")
       .then((res) => {
         setProducts(res.data);
         setLoading(false);
@@ -41,7 +43,8 @@ const Home = () => {
     navigate(path);
   };
 
-  if (loading) return <div className="text-center text-white py-20">Loading...</div>;
+  if (loading)
+    return <div className="text-center text-white py-20">Loading...</div>;
 
   return (
     <div className="bg-gray-950 text-gray-200 min-h-screen">
@@ -68,7 +71,9 @@ const Home = () => {
       {/* Categories */}
       <section className="py-12 bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-8">Browse Categories</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-8">
+            Browse Categories
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div
               onClick={() => handleCategoryClick("/hardware")}
@@ -95,7 +100,9 @@ const Home = () => {
       {/* Featured Products */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center">Featured Products</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
+            Featured Products
+          </h2>
           {products.length === 0 ? (
             <p className="text-center text-gray-400">No top products found.</p>
           ) : (
@@ -113,7 +120,7 @@ const Home = () => {
                       <img
                         src={
                           p.images?.length
-                            ? `http://localhost:5000/uploads/${p.images[0]}`
+                            ? `${IMAGE_BASE}/uploads/${p.images[0]}`
                             : "/no-image.jpg"
                         }
                         alt={p.name}
@@ -124,7 +131,9 @@ const Home = () => {
                       </span>
                     </div>
                     <div className="p-4">
-                      <h4 className="text-base sm:text-lg font-semibold">{p.name}</h4>
+                      <h4 className="text-base sm:text-lg font-semibold">
+                        {p.name}
+                      </h4>
                       <p className="text-xs text-gray-400 mb-1">
                         Category: {p.category}
                       </p>
@@ -132,7 +141,9 @@ const Home = () => {
                         {p.description}
                       </p>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-cyan-400 font-bold">${p.price}</span>
+                        <span className="text-cyan-400 font-bold">
+                          ${p.price}
+                        </span>
                         <span className="text-yellow-400 text-sm">
                           ⭐ {p.rating?.toFixed(1) || 0}
                         </span>
