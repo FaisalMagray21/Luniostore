@@ -2,15 +2,24 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const BACKEND_URL = "https://luniostore-backend.vercel.app";
+const IMAGE_BASE = `${BACKEND_URL}/uploads`;
+
 const Shop = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/products/all")
-      .then((res) => setProducts(res.data))
-      .catch((err) => console.error("Error fetching products:", err));
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get(`${BACKEND_URL}/api/products/all`);
+        setProducts(res.data);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      }
+    };
+
+    fetchProducts();
   }, []);
 
   return (
@@ -31,9 +40,9 @@ const Shop = () => {
       <section className="py-10">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((p, idx) => (
+            {products.map((p) => (
               <div
-                key={idx}
+                key={p._id}
                 className="bg-gray-800 rounded-xl overflow-hidden shadow hover:shadow-lg transform hover:-translate-y-1 transition"
               >
                 {/* Product Image */}
@@ -43,10 +52,8 @@ const Shop = () => {
                 >
                   <img
                     src={
-                      Array.isArray(p.images)
-                        ? `http://localhost:5000/uploads/${p.images[0]}`
-                        : p.images
-                        ? `http://localhost:5000/uploads/${p.images}`
+                      p.images?.length > 0
+                        ? `${IMAGE_BASE}/${p.images[0]}`
                         : "/placeholder.png"
                     }
                     alt={p.name}
@@ -69,7 +76,7 @@ const Shop = () => {
 
                   <div className="flex gap-2 mt-4">
                     <button
-                      onClick={() => navigate(`/checkout/${p._id}`)}
+                      onClick={() => navigate(`/checkout?product=${p._id}`)}
                       className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs px-3 py-1 rounded shadow"
                     >
                       Shop Now

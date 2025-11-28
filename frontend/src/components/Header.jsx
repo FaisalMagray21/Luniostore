@@ -9,6 +9,8 @@ const Header = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // ✅ New state
   const userinfo = JSON.parse(localStorage.getItem("userInfo"));
+  const API_BASE = "https://luniostore-backend.vercel.app/api";
+const IMAGE_BASE = "https://luniostore-backend.vercel.app/uploads";
 
   const handleSellerClick = () => {
     if (userinfo?.token) {
@@ -29,7 +31,7 @@ const Header = () => {
 
       try {
         const { data } = await axios.get(
-          `http://localhost:5000/api/products/search?q=${searchQuery}`
+          `${API_BASE}/products/search?q=${searchQuery}`
         );
         setSuggestions(data.slice(0, 5)); // top 5 results
       } catch (error) {
