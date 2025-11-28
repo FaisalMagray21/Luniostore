@@ -1,13 +1,15 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const BuyerProductList = () => {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const { axiosAuth, userInfo } = useContext(AuthContext);
-  const { id } = useParams();
   const navigate = useNavigate();
+
+  // BASE URL for images
+  const IMAGE_BASE = "https://luniostore-backend.vercel.app";
 
   // ✅ Fetch all available products
   const fetchProducts = async () => {
@@ -77,7 +79,7 @@ const BuyerProductList = () => {
               <img
                 src={
                   p.images?.length
-                    ? `http://localhost:5000/uploads/${p.images[0]}`
+                    ? `${IMAGE_BASE}/uploads/${p.images[0]}`
                     : "https://via.placeholder.com/300x200?text=No+Image"
                 }
                 alt={p.name}
@@ -106,9 +108,7 @@ const BuyerProductList = () => {
                     Claim Product
                   </button>
                   <button
-                    onClick={() =>
-                      navigate(`/product/${p._id}`)
-                    }
+                    onClick={() => navigate(`/product/${p._id}`)}
                     className="text-sm text-gray-500 underline hover:text-gray-700"
                   >
                     View Details

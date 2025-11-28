@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
 
 const Checkout = () => {
+  const { axiosAuth, userInfo } = useContext(AuthContext);
   const [quantity, setQuantity] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState("credit");
   const [product, setProduct] = useState(null);
@@ -11,12 +12,10 @@ const Checkout = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
-
-  // ✅ Get productId safely from query parameters
   const productId = new URLSearchParams(location.search).get("product");
 
-  const storedUser = JSON.parse(localStorage.getItem("userInfo"));
-  const token = storedUser?.token;
+  // ✅ Backend image base URL
+  const IMAGE_BASE = "https://luniostore-backend.vercel.app";
 
   // ✅ Fetch product details
   useEffect(() => {
@@ -28,7 +27,7 @@ const Checkout = () => {
 
     const fetchProduct = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/products/${productId}`);
+        const res = await axiosAuth.get(`/products/${productId}`);
         setProduct(res.data);
       } catch (err) {
         console.error("❌ Error fetching product:", err.response?.data || err.message);
@@ -38,11 +37,11 @@ const Checkout = () => {
     };
 
     fetchProduct();
-  }, [productId, navigate]);
+  }, [productId, navigate, axiosAuth]);
 
   // ✅ Handle order placement
   const handlePlaceOrder = async () => {
-    if (!token) {
+    if (!userInfo?.token) {
       alert("⚠️ Please login first!");
       navigate("/login");
       return;
@@ -63,26 +62,19 @@ const Checkout = () => {
       paymentMethod,
       shippingAddress,
       totalPrice,
-    seller: product.seller?._id, 
+      seller: product.seller?._id,
     };
-
-    console.log("📦 Sending Order Data:", orderData);
 
     try {
       setLoading(true);
+      // ✅ Place order
+      await axiosAuth.post("/orders", orderData);
 
-      // ✅ Create order
-      await axios.post("http://localhost:5000/api/orders", orderData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // ✅ Update seller statistics (optional)
+      // ✅ Update seller stats
       try {
-        await axios.put(
-          `http://localhost:5000/api/orders/update-stats/${product.seller?._id || product.seller}`,
-          { saleAmount: product.price * quantity },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await axiosAuth.put(`/orders/update-stats/${product.seller?._id}`, {
+          saleAmount: product.price * quantity,
+        });
       } catch (err) {
         console.warn("⚠️ Seller stats update skipped:", err.response?.data || err.message);
       }
@@ -106,14 +98,14 @@ const Checkout = () => {
       <div className="max-w-3xl mx-auto bg-gray-800 rounded-lg p-6 shadow">
         <h1 className="text-3xl font-bold mb-4">🛒 Checkout</h1>
 
-        {/* ✅ Product Info */}
+        {/* Product Info */}
         <div className="flex flex-col md:flex-row gap-4 mb-4">
           <img
             src={
-              Array.isArray(product.images) && product.images.length > 0
-                ? `http://localhost:5000/uploads/${product.images[0]}`
+              product.images?.length
+                ? `${IMAGE_BASE}/uploads/${product.images[0]}`
                 : product.image
-                ? `http://localhost:5000/uploads/${product.image}`
+                ? `${IMAGE_BASE}/uploads/${product.image}`
                 : "/placeholder.png"
             }
             alt={product.name}
@@ -126,7 +118,7 @@ const Checkout = () => {
           </div>
         </div>
 
-        {/* ✅ Quantity */}
+        {/* Quantity */}
         <div className="mb-4">
           <label className="block mb-1">Quantity</label>
           <input
@@ -138,7 +130,7 @@ const Checkout = () => {
           />
         </div>
 
-        {/* ✅ Shipping Address */}
+        {/* Shipping Address */}
         <div className="mb-4">
           <label className="block mb-1">Shipping Address</label>
           <textarea
@@ -150,7 +142,7 @@ const Checkout = () => {
           />
         </div>
 
-        {/* ✅ Payment Method */}
+        {/* Payment Method */}
         <div className="mb-4">
           <label className="block mb-1">Payment Method</label>
           <div className="flex gap-4">
@@ -168,7 +160,7 @@ const Checkout = () => {
           </div>
         </div>
 
-        {/* ✅ Order Summary */}
+        {/* Order Summary */}
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2">Order Summary</h3>
           <div className="flex justify-between">
@@ -187,7 +179,7 @@ const Checkout = () => {
           </div>
         </div>
 
-        {/* ✅ Place Order Button */}
+        {/* Place Order Button */}
         <button
           onClick={handlePlaceOrder}
           disabled={loading}
