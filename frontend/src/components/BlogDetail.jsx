@@ -1,22 +1,23 @@
 import React, { useEffect, useState, useContext } from "react";
-import axios from "axios";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 const BlogDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { userInfo } = useContext(AuthContext);
+  const { userInfo, axiosAuth } = useContext(AuthContext);
 
   const [blog, setBlog] = useState(null);
   const [likes, setLikes] = useState(0);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const token = userInfo?.token;
+
+  // BASE URL for images
+  const IMAGE_BASE = "https://luniostore-backend.vercel.app";
 
   const fetchBlog = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/blogs/${id}`);
+      const res = await axiosAuth.get(`/blogs/${id}`);
       setBlog(res.data);
       setLikes(res.data.likes?.length || 0);
       setComments(res.data.comments || []);
@@ -30,17 +31,13 @@ const BlogDetail = () => {
   }, [id]);
 
   const handleLike = async () => {
-    if (!token) {
+    if (!userInfo?.token) {
       navigate("/signin");
       return;
     }
 
     try {
-      const res = await axios.put(
-        `http://localhost:5000/api/blogs/like/${id}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await axiosAuth.put(`/blogs/like/${id}`);
       setLikes(res.data.count);
     } catch (err) {
       console.error("Error liking blog:", err);
@@ -51,17 +48,15 @@ const BlogDetail = () => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    if (!token) {
+    if (!userInfo?.token) {
       navigate("/signin");
       return;
     }
 
     try {
-      const res = await axios.post(
-        `http://localhost:5000/api/blogs/comment/${id}`,
-        { comment: newComment },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await axiosAuth.post(`/blogs/comment/${id}`, {
+        comment: newComment,
+      });
       setComments(res.data.comments);
       setNewComment("");
     } catch (err) {
@@ -74,13 +69,16 @@ const BlogDetail = () => {
   return (
     <div className="bg-gray-900 text-white min-h-screen p-6">
       <div className="max-w-3xl mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
-        <Link to="/blogs" className="text-cyan-400 hover:underline mb-4 inline-block">
+        <Link
+          to="/blogs"
+          className="text-cyan-400 hover:underline mb-4 inline-block"
+        >
           ← Back to Blogs
         </Link>
 
         {blog.image && (
           <img
-            src={`http://localhost:5000/uploads/${blog.image}`}
+            src={`${IMAGE_BASE}/uploads/${blog.image}`}
             alt={blog.title}
             className="w-full h-64 object-cover rounded mb-6"
           />
@@ -88,7 +86,9 @@ const BlogDetail = () => {
 
         <h1 className="text-3xl font-bold mb-3">{blog.title}</h1>
         {blog.category && (
-          <p className="text-sm text-gray-400 mb-2">Category: {blog.category}</p>
+          <p className="text-sm text-gray-400 mb-2">
+            Category: {blog.category}
+          </p>
         )}
         <p className="text-gray-400 text-sm mb-4">
           Published on: {new Date(blog.createdAt).toLocaleDateString()}
@@ -100,14 +100,16 @@ const BlogDetail = () => {
           <button
             onClick={handleLike}
             className={`px-4 py-2 rounded ${
-              token
+              userInfo?.token
                 ? "bg-cyan-500 hover:bg-cyan-600"
                 : "bg-gray-600 cursor-not-allowed"
             }`}
           >
             👍 Like
           </button>
-          <span>{likes} {likes === 1 ? "Like" : "Likes"}</span>
+          <span>
+            {likes} {likes === 1 ? "Like" : "Likes"}
+          </span>
         </div>
 
         {/* Comments Section */}
@@ -116,7 +118,10 @@ const BlogDetail = () => {
           {comments.length > 0 ? (
             <ul className="mb-4">
               {comments.map((c, idx) => (
-                <li key={idx} className="mb-3 border-b border-gray-700 pb-2">
+                <li
+                  key={idx}
+                  className="mb-3 border-b border-gray-700 pb-2"
+                >
                   <p className="text-gray-200">{c.comment}</p>
                   <p className="text-gray-500 text-sm">
                     By <span className="font-medium">{c.user?.name || "Unknown"}</span> •{" "}
@@ -130,7 +135,7 @@ const BlogDetail = () => {
           )}
 
           {/* Add Comment Form */}
-          {token ? (
+          {userInfo?.token ? (
             <form onSubmit={handleCommentSubmit} className="flex gap-2">
               <input
                 type="text"
