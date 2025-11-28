@@ -2,6 +2,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+const API_BASE = "https://luniostore-backend.vercel.app/api";
+const IMAGE_BASE = "https://luniostore-backend.vercel.app/uploads";
+
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -11,13 +14,12 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
 
-  // ✅ Fetch product data
   const fetchProduct = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/products/${id}`);
+      const res = await axios.get(`${API_BASE}/products/${id}`);
       setProduct(res.data);
       if (res.data.images?.length > 0) {
-        setSelectedImage(`http://localhost:5000/uploads/${res.data.images[0]}`);
+        setSelectedImage(`${IMAGE_BASE}/${res.data.images[0]}`);
       }
     } catch (err) {
       console.error("Error fetching product:", err);
@@ -31,7 +33,6 @@ const ProductDetail = () => {
     fetchProduct();
   }, [id]);
 
-  // ✅ Submit rating
   const submitRating = async () => {
     if (rating < 1 || rating > 5) {
       alert("Please select a rating between 1 and 5");
@@ -46,7 +47,7 @@ const ProductDetail = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/products/${id}/rate`,
+        `${API_BASE}/products/${id}/rate`,
         { rating },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -91,7 +92,6 @@ const ProductDetail = () => {
         </button>
 
         <div className="bg-gray-800 p-6 rounded-2xl shadow-xl flex flex-col lg:flex-row gap-10">
-          {/* ✅ Image Gallery Section */}
           <div className="lg:w-1/2 flex flex-col items-center">
             <div className="w-full flex justify-center">
               <img
@@ -101,11 +101,10 @@ const ProductDetail = () => {
               />
             </div>
 
-            {/* Thumbnails */}
             {product.images && product.images.length > 1 && (
               <div className="flex justify-center flex-wrap gap-3 mt-4">
                 {product.images.map((img, index) => {
-                  const imageUrl = `http://localhost:5000/uploads/${img}`;
+                  const imageUrl = `${IMAGE_BASE}/${img}`;
                   return (
                     <img
                       key={index}
@@ -124,7 +123,6 @@ const ProductDetail = () => {
             )}
           </div>
 
-          {/* ✅ Product Details Section */}
           <div className="lg:w-1/2 space-y-5">
             <h1 className="text-4xl font-bold text-cyan-300">{product.name}</h1>
 
@@ -142,15 +140,11 @@ const ProductDetail = () => {
 
             <p className="text-gray-400 leading-relaxed">{product.description}</p>
 
-            <div className="text-3xl font-bold text-cyan-400">
-              ${product.price}
-            </div>
-
+            <div className="text-3xl font-bold text-cyan-400">${product.price}</div>
             <div className="text-sm text-gray-400">
               📈 Sales: <span className="text-green-400">{product.salesCount || 0}</span>
             </div>
 
-            {/* ⭐ Rating Input */}
             <div className="mt-6">
               <label className="block text-gray-300 mb-2">Your Rating:</label>
               <div className="flex items-center">
@@ -175,7 +169,6 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* 🛒 Action Buttons */}
             <div className="flex flex-wrap gap-4 mt-8">
               <button
                 onClick={() => navigate(`/checkout?product=${product._id}`)}
