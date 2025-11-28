@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const BACKEND_URL = "https://luniostore-backend.vercel.app";
+
 const Software = () => {
   const [softwareProducts, setSoftwareProducts] = useState([]);
   const navigate = useNavigate();
@@ -9,8 +11,10 @@ const Software = () => {
   useEffect(() => {
     const fetchSoftware = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/products/category/Software");
-        const softwareOnly = res.data.filter((p) => p.category.toLowerCase() === "software");
+        const res = await axios.get(`${BACKEND_URL}/api/products/category/Software`);
+        const softwareOnly = res.data.filter(
+          (p) => p.category.toLowerCase() === "software"
+        );
         setSoftwareProducts(softwareOnly);
       } catch (err) {
         console.error("Failed to fetch software products", err);
@@ -36,7 +40,7 @@ const Software = () => {
                 className="cursor-pointer relative"
               >
                 <img
-                  src={`http://localhost:5000/uploads/${p.images?.[0] || p.images}`}
+                  src={`${BACKEND_URL}/uploads/${p.images?.[0] || p.images}`}
                   alt={p.name}
                   className="w-full h-40 object-cover"
                 />
@@ -51,7 +55,7 @@ const Software = () => {
 
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-green-400 font-bold">${p.price}</span>
-                  <span className="text-yellow-400 text-sm">⭐ {p.rating}</span>
+                  <span className="text-yellow-400 text-sm">⭐ {p.rating || "4.5"}</span>
                 </div>
 
                 <div className="flex gap-2">
@@ -69,7 +73,6 @@ const Software = () => {
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );

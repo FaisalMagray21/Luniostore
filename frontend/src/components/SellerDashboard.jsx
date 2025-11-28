@@ -2,6 +2,8 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
+const IMAGE_BASE = "https://luniostore-backend.vercel.app/uploads";
+
 const SellerDashboard = () => {
   const [products, setProducts] = useState([]);
   const [blogs, setBlogs] = useState([]);
@@ -221,7 +223,7 @@ const SellerDashboard = () => {
                   <div key={p._id} className="bg-white p-4 rounded shadow">
                     {p.images?.length > 0 ? (
                       <img
-                        src={`http://localhost:5000/uploads/${p.images[0]}`}
+                        src={`${IMAGE_BASE}/${p.images[0]}`}
                         alt={p.name}
                         className="h-40 w-full object-cover rounded mb-3"
                       />
@@ -266,7 +268,7 @@ const SellerDashboard = () => {
                   <div key={b._id} className="bg-white p-4 rounded shadow">
                     {b.image ? (
                       <img
-                        src={`http://localhost:5000/uploads/${b.image}`}
+                        src={`${IMAGE_BASE}/${b.image}`}
                         alt="blog"
                         className="h-40 w-full object-cover rounded mb-3"
                       />

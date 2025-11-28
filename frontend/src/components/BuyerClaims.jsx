@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const BuyerClaims = () => {
   const { axiosAuth, userInfo, loading } = useContext(AuthContext);
@@ -8,8 +8,11 @@ const BuyerClaims = () => {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const navigate = useNavigate();
-  const { id } = useParams();
 
+  // BASE URL for images
+  const IMAGE_BASE = "https://luniostore-backend.vercel.app";
+
+  // ✅ Protect route for buyers only
   useEffect(() => {
     if (!loading && userInfo?.user?.role !== "buyer") {
       navigate("/unauthorized");
@@ -18,7 +21,7 @@ const BuyerClaims = () => {
 
   const fetchOrders = async () => {
     try {
-      const res = await axiosAuth.get("orders");
+      const res = await axiosAuth.get("/orders");
       setOrders(res.data);
     } catch (err) {
       console.error("❌ Error fetching orders:", err);
@@ -35,7 +38,7 @@ const BuyerClaims = () => {
   const handleMarkAsReceived = async (orderId) => {
     try {
       setUpdatingId(orderId);
-      await axiosAuth.put(`orders/${orderId}/status`, { status: "Delivered" });
+      await axiosAuth.put(`/orders/${orderId}/status`, { status: "Delivered" });
       await fetchOrders();
       alert("✅ Product marked as Received!");
     } catch (err) {
@@ -60,7 +63,7 @@ const BuyerClaims = () => {
         <h2 className="text-2xl font-semibold mb-2">No claimed products yet</h2>
         <p>Browse products and place your first order!</p>
         <button
-          onClick={() => navigate(`/buyer/products/${id}`)}
+          onClick={() => navigate("/buyer/products")}
           className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
         >
           Browse Products
@@ -79,8 +82,8 @@ const BuyerClaims = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {orders.map((order) => {
             const product = order.product;
-            const imageSrc = Array.isArray(product?.images)
-              ? `http://localhost:5000/uploads/${product.images[0]}`
+            const imageSrc = Array.isArray(product?.images) && product.images.length
+              ? `${IMAGE_BASE}/uploads/${product.images[0]}`
               : product?.image || "/placeholder.png";
 
             return (
@@ -134,12 +137,9 @@ const BuyerClaims = () => {
                           : "bg-green-600 hover:bg-green-700"
                       }`}
                     >
-                      {updatingId === order._id
-                        ? "Updating..."
-                        : "Mark as Received"}
+                      {updatingId === order._id ? "Updating..." : "Mark as Received"}
                     </button>
                   )}
-
                 </div>
               </div>
             );

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowLeft, Shield, ArrowRight, CheckCircle, RefreshCw } from "lucide-react";
+import { ArrowLeft, Shield, ArrowRight, CheckCircle } from "lucide-react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import axios from "axios";
 
@@ -7,6 +7,7 @@ export default function VerifyOtp() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const email = location.state?.email || "user@example.com"; // fallback if no email
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -17,23 +18,30 @@ export default function VerifyOtp() {
 
   const inputRefs = useRef([]);
 
+  // Focus first input on mount
   useEffect(() => {
     inputRefs.current[0]?.focus();
   }, []);
 
+  // Countdown for resend button
   useEffect(() => {
     if (resendCountdown <= 0) return;
-
     const timer = setInterval(() => {
       setResendCountdown((prev) => prev - 1);
     }, 1000);
-
     return () => clearInterval(timer);
   }, [resendCountdown]);
 
+  // Auto-verify when all 6 digits are entered
+  useEffect(() => {
+    if (otp.every((digit) => digit !== "")) {
+      handleVerify();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [otp]);
+
   const handleChange = (index, value) => {
     if (!/^\d*$/.test(value)) return;
-
     const newOtp = [...otp];
     newOtp[index] = value.slice(-1);
     setOtp(newOtp);
@@ -52,16 +60,13 @@ export default function VerifyOtp() {
 
   const handleVerify = async () => {
     const code = otp.join("");
-    if (code.length !== 6) {
-      setError("Please enter all 6 digits");
-      return;
-    }
+    if (code.length !== 6 || isVerifying) return;
 
     setIsVerifying(true);
     setError("");
 
     try {
-      await axios.post("http://localhost:5000/api/verify-otp", { email, otp: code });
+      await axios.post(`${BACKEND_URL}/api/verify-otp`, { email, otp: code });
       setIsVerified(true);
       setTimeout(() => navigate("/dashboard"), 2000);
     } catch (err) {
@@ -76,12 +81,15 @@ export default function VerifyOtp() {
   const handleResend = () => {
     if (resendCountdown > 0) return;
     setResendCountdown(60);
+    setOtp(["", "", "", "", "", ""]);
+    inputRefs.current[0]?.focus();
     setError("");
-    axios.post("http://localhost:5000/api/resend-otp", { email });
+    axios.post(`${BACKEND_URL}/api/resend-otp`, { email });
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-purple-900 p-4 relative">
+      {/* Background animated dots */}
       <div className="absolute inset-0 flex flex-wrap opacity-10">
         {[...Array(20)].map((_, i) => (
           <div
@@ -99,7 +107,10 @@ export default function VerifyOtp() {
       </div>
 
       <div className="relative z-10 w-full max-w-md bg-slate-800/50 backdrop-blur-md rounded-xl p-6 shadow-lg">
-        <Link to="/login" className="text-slate-400 hover:text-purple-400 flex items-center mb-4 text-sm">
+        <Link
+          to="/login"
+          className="text-slate-400 hover:text-purple-400 flex items-center mb-4 text-sm"
+        >
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to Login
         </Link>
 
@@ -110,7 +121,9 @@ export default function VerifyOtp() {
                 <Shield className="text-white w-6 h-6" />
               </div>
               <h1 className="text-xl font-bold text-white">Verify Your Account</h1>
-              <p className="text-sm text-slate-300">Code sent to <span className="text-purple-300">{email}</span></p>
+              <p className="text-sm text-slate-300">
+                Code sent to <span className="text-purple-300">{email}</span>
+              </p>
             </div>
 
             <div className="flex gap-2 justify-center mt-6">
@@ -120,7 +133,9 @@ export default function VerifyOtp() {
                   ref={(el) => (inputRefs.current[i] = el)}
                   type="text"
                   inputMode="numeric"
+                  pattern="\d*"
                   maxLength="1"
+                  aria-label={`OTP digit ${i + 1}`}
                   value={digit}
                   onChange={(e) => handleChange(i, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(i, e)}
@@ -131,7 +146,9 @@ export default function VerifyOtp() {
               ))}
             </div>
 
-            {error && <p className="text-red-400 text-center mt-2 text-sm">{error}</p>}
+            {error && (
+              <p className="text-red-400 text-center mt-2 text-sm">{error}</p>
+            )}
 
             <button
               onClick={handleVerify}
@@ -157,7 +174,9 @@ export default function VerifyOtp() {
                   disabled={resendCountdown > 0}
                   className="text-purple-400 hover:underline disabled:text-slate-500"
                 >
-                  {resendCountdown > 0 ? `Resend in ${resendCountdown}s` : "Resend Code"}
+                  {resendCountdown > 0
+                    ? `Resend in ${resendCountdown}s`
+                    : "Resend Code"}
                 </button>
               </p>
             </div>

@@ -5,13 +5,14 @@ const VerifySignup = ({ email, setStep }) => {
   const [otp, setOtp] = useState("");
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
+  const BACKEND_URL = "https://luniostore-backend.vercel.app";
 
   const handleVerify = async () => {
     setMsg("");
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/verify-otp", {
+      const res = await axios.post(`${BACKEND_URL}/api/verify-otp`, {
         email,
         otp,
       });
