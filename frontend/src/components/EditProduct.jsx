@@ -1,14 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
 
 const EditProduct = () => {
   const { sellerId, productId } = useParams();
   const navigate = useNavigate();
-
-  // ✅ Parse the user info properly
-  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-  const token = userInfo?.token;
+  const { axiosAuth } = useContext(AuthContext); // use authenticated axios
 
   const [form, setForm] = useState({
     name: "",
@@ -16,20 +13,16 @@ const EditProduct = () => {
     description: "",
     price: "",
   });
-
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch single product by ID
+  const IMAGE_BASE = "https://luniostore-backend.vercel.app"; // deployed backend
+
+  // ✅ Fetch single product
   const fetchProduct = async () => {
     try {
-      const res = await axios.get(
-        `http://localhost:5000/api/products/${productId}`,
-        { headers: { Authorization: `Bearer ${token}` } } // include token here
-      );
-
+      const res = await axiosAuth.get(`/products/${productId}`);
       const p = res.data;
-
       setForm({
         name: p.name || "",
         category: p.category || "",
@@ -45,21 +38,20 @@ const EditProduct = () => {
     }
   };
 
+  useEffect(() => {
+    fetchProduct();
+  }, [productId]);
+
   // ✅ Handle input changes
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // ✅ Submit update
+  // ✅ Submit updated product
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      await axios.put(
-        `http://localhost:5000/api/products/${productId}`,
-        form,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axiosAuth.put(`/products/${productId}`, form);
       alert("✅ Product updated successfully!");
       navigate(`/seller/dashboard/${sellerId}`);
     } catch (err) {
@@ -67,10 +59,6 @@ const EditProduct = () => {
       alert(err.response?.data?.message || "Error updating product");
     }
   };
-
-  useEffect(() => {
-    fetchProduct();
-  }, [productId]);
 
   if (loading) return <div className="p-6">Loading...</div>;
 
@@ -147,7 +135,7 @@ const EditProduct = () => {
               images.map((img, i) => (
                 <img
                   key={i}
-                  src={`http://localhost:5000/uploads/${img}`}
+                  src={`${IMAGE_BASE}/uploads/${img}`}
                   alt={`Product ${i}`}
                   className="w-full h-32 object-cover rounded"
                 />

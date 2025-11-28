@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const API_BASE = "https://luniostore-backend.vercel.app/api";
+const IMAGE_BASE = "https://luniostore-backend.vercel.app/uploads";
+
 const SearchResults = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -15,9 +18,7 @@ const SearchResults = () => {
     const fetchResults = async () => {
       setLoading(true);
       try {
-        const { data } = await axios.get(
-          `http://localhost:5000/api/products/search?q=${query}`
-        );
+        const { data } = await axios.get(`${API_BASE}/products/search?q=${query}`);
         setProducts(data);
       } catch (error) {
         console.error("Search fetch error:", error.message);
@@ -53,7 +54,7 @@ const SearchResults = () => {
                   <img
                     src={
                       p.images && p.images.length > 0
-                        ? `http://localhost:5000/uploads/${p.images[0]}`
+                        ? `${IMAGE_BASE}/${p.images[0]}`
                         : "https://via.placeholder.com/300x200?text=No+Image"
                     }
                     alt={p.name}
