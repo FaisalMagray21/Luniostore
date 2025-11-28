@@ -3,9 +3,11 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
+const BACKEND_URL = "https://luniostore-backend.vercel.app";
+
 const Signup = () => {
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext); // 👈 login function le lo
+  const { login } = useContext(AuthContext);
 
   const [form, setForm] = useState({
     name: "",
@@ -14,37 +16,43 @@ const Signup = () => {
     role: "buyer",
   });
   const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMsg("");
+    setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/signup", form);
+      const res = await axios.post(`${BACKEND_URL}/api/signup`, form);
+      
+      // Success message from backend
       setMsg(res.data.message);
 
-      // 👇 OTP verify hone ke baad login call karna hoga
-      // navigate("/verify-otp", { state: { email: form.email } });
-
-      // agar backend signup ke baad hi token bhejta hai:
+      // ✅ If backend sends token immediately, login the user
       if (res.data.token) {
         login({ token: res.data.token, user: res.data.user });
-        navigate("/"); // dashboard par bhejo
+
+        // Role-based navigation
+        if (res.data.user.role === "seller") navigate(`/seller/dashboard/${res.data.user.id}`);
+        else if (res.data.user.role === "buyer") navigate(`/buyer/dashboard/${res.data.user.id}`);
+        else navigate("/");
       } else {
-        // agar backend pehle OTP verify mangta hai:
+        // If OTP verification is required
         navigate("/verify-otp", { state: { email: form.email } });
       }
     } catch (err) {
-      setMsg(err.response?.data?.message || err.message);
+      console.error(err);
+      setMsg(err.response?.data?.message || "Signup failed. Try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950">
+    <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
       <div className="bg-gray-900 p-8 rounded shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center text-cyan-400 mb-4">
-          Sign Up
-        </h2>
+        <h2 className="text-2xl font-bold text-center text-cyan-400 mb-4">Sign Up</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -81,9 +89,10 @@ const Signup = () => {
 
           <button
             type="submit"
+            disabled={loading}
             className="w-full bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded"
           >
-            Sign Up
+            {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>
 

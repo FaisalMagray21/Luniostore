@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const BACKEND_URL = "https://luniostore-backend.vercel.app";
+const IMAGE_BASE = `${BACKEND_URL}/uploads`;
+
 const Services = () => {
   const [serviceProducts, setServiceProducts] = useState([]);
   const navigate = useNavigate();
@@ -9,7 +12,7 @@ const Services = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/products/category/Services");
+        const res = await axios.get(`${BACKEND_URL}/api/products/category/Services`);
         const serviceOnly = res.data.filter((p) => p.category.toLowerCase() === "services");
         setServiceProducts(serviceOnly);
       } catch (err) {
@@ -26,21 +29,20 @@ const Services = () => {
         <h1 className="text-3xl font-bold mb-6 text-center">Service-Based Products</h1>
 
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {serviceProducts.map((p, i) => (
+          {serviceProducts.map((p) => (
             <div
-              key={i}
+              key={p._id}
               className="bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl transform hover:-translate-y-1 transition duration-300"
             >
               <div
-                onClick={() => navigate(`/product/${p.name}`)}
+                onClick={() => navigate(`/product/${p._id}`)}
                 className="cursor-pointer relative"
               >
                 <img
-                  src={`http://localhost:5000/uploads/${p.images}`}
+                  src={p.images?.length > 0 ? `${IMAGE_BASE}/${p.images[0]}` : "https://via.placeholder.com/300x200?text=No+Image"}
                   alt={p.name}
                   className="w-full h-40 object-cover"
                 />
-
                 <span className="absolute top-2 left-2 bg-purple-600 text-xs px-2 py-1 rounded-full">
                   New
                 </span>
@@ -52,7 +54,7 @@ const Services = () => {
 
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-cyan-400 font-bold">${p.price}</span>
-                  <span className="text-yellow-400 text-sm">⭐ {p.rating}</span>
+                  <span className="text-yellow-400 text-sm">⭐ {p.rating || "N/A"}</span>
                 </div>
 
                 <div className="flex gap-2">

@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
+const BACKEND_URL = "https://luniostore-backend.vercel.app";
+
 const Signin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,7 +20,7 @@ const Signin = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/login", {
+      const res = await axios.post(`${BACKEND_URL}/api/login`, {
         email,
         password,
       });
@@ -29,9 +31,9 @@ const Signin = () => {
       login({ token, user });
 
       // ✅ Role-based navigation
-if (user.role === "seller") navigate(`/seller/dashboard/${user.id}`);
-else if (user.role === "buyer") navigate(`/buyer/dashboard/${user.id}`);
-else navigate("/");
+      if (user.role === "seller") navigate(`/seller/dashboard/${user.id}`);
+      else if (user.role === "buyer") navigate(`/buyer/dashboard/${user.id}`);
+      else navigate("/");
 
       setLoading(false);
     } catch (err) {
@@ -81,8 +83,6 @@ else navigate("/");
             {loading ? "Signing In..." : "Sign In"}
           </button>
         </form>
-
-
 
         <p className="mt-2 text-xs sm:text-sm text-center text-gray-400">
           Don’t have an account?{" "}
